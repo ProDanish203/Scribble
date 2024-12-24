@@ -25,3 +25,5 @@ while True:
         print(result)
     except Exception as e:
         print(f"An error occurred: {e}")
+
+    #if 2 greater than 1 do make x = 5

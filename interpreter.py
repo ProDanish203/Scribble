@@ -119,3 +119,4 @@ class Interpreter:
 
             operator = tree[1]
             return self.compute_bin(left_node, operator, right_node)
+
