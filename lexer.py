@@ -1,76 +1,61 @@
-from tokens import (
-    Declaration,
-    Float,
-    Integer,
-    Boolean,
-    Operator,
-    Variable,
-    Comparison,
-    Keyword,
-)
+from tokens import Integer, Float, Operation, Declaration, Variable, Boolean, Comparison, Reserved
 
+
+# make varname = 50
 
 class Lexer:
+    # while <expr> do <statement>
+    # while <expr> do <statement>
     digits = "0123456789"
-    letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    operators = "+-*/()="
-    ws = [" ", "\n", "\t"]  # whitespace
-    boolean = [
-        "and",
-        "or",
-        "not",
-    ]
-    decalrations = ["create"]
-    comparsion = ["?=", "<>", "<", ">", "<=", ">="]
-    special_characters = "><=?"
-    # keywords = ["if", "elseif", "else", "repeat", "do"]
+    letters = "abcdefghijklmnopqrstuvwxyz"
+    operations = ["+", "-", "*", "/", "(", ")", "=", "plus", "minus", "times", "divided by"]
+    stopwords = [" "]
+    declarations = ["make", "create", "set", "define"]
+    boolean = ["and", "or", "not"]
+    comparisons = [">", "<", ">=", "<=", "?=", "greater", "less", "equal", "greater than", "less than",
+                   "greater or equal", "less or equal", "equal to", "not equal"]
+    specialCharacters = "><=?"
+    reserved = ["if", "elif", "else", "do", "while"]
 
     def __init__(self, text):
-        self.text = text  # input string
-        self.idx = 0  # current position in input
-        self.tokens = []  # list of tokens
-        self.current_char = self.text[self.idx]  # current character
-        self.token = None  # current token
-
-    def advance(self):
-        self.idx += 1
-        if self.idx < len(self.text):
-            self.current_char = self.text[self.idx]
+        self.text = text
+        self.idx = 0
+        self.tokens = []
+        self.char = self.text[self.idx]
+        self.token = None
 
     def tokenize(self):
         while self.idx < len(self.text):
-            # Handle Whitespace
-            if self.current_char in self.ws:
-                self.advance()
-                continue
-            # Handle Digits
-            elif self.current_char in self.digits:
+            if self.char in Lexer.digits:
                 self.token = self.extract_number()
 
-            # Handle Operators
-            elif self.current_char in self.operators:
-                self.token = self.extract_operator()
+            elif self.char in Lexer.operations:
+                self.token = Operation(self.char)
+                self.move()
 
-            # Handle Letters
-            elif self.current_char in self.letters:
+            elif self.char in Lexer.stopwords:
+                self.move()
+                continue
+
+            elif self.char in Lexer.letters:
                 word = self.extract_word()
-                if word in Lexer.decalrations:
+
+                if word in Lexer.declarations:
                     self.token = Declaration(word)
                 elif word in Lexer.boolean:
                     self.token = Boolean(word)
+                elif word in Lexer.reserved:
+                    self.token = Reserved(word)
                 else:
                     self.token = Variable(word)
 
-            # Handle Special Characters
-            elif self.current_char in Lexer.special_characters:
-                comparisonOpeartor = ""
-                while self.current_char in Lexer.special_characters and self.idx < len(
-                    self.text
-                ):
-                    comparisonOpeartor += self.current_char
-                    self.advance()
+            elif self.char in Lexer.specialCharacters:
+                comparisonOperator = ""
+                while self.char in Lexer.specialCharacters and self.idx < len(self.text):
+                    comparisonOperator += self.char
+                    self.move()
 
-                self.token = Comparison(comparisonOpeartor)
+                self.token = Comparison(comparisonOperator)
 
             self.tokens.append(self.token)
 
@@ -78,26 +63,24 @@ class Lexer:
 
     def extract_number(self):
         number = ""
-        is_float = False
-        while (self.current_char in Lexer.digits or self.current_char == ".") and (
-            self.idx < len(self.text)
-        ):
-            if self.current_char == ".":
-                is_float = True
-            number += self.current_char
-            self.advance()
+        isFloat = False
+        while (self.char in Lexer.digits or self.char == ".") and (self.idx < len(self.text)):
+            if self.char == ".":
+                isFloat = True
+            number += self.char
+            self.move()
 
-        return Integer(number) if not is_float else Float(number)
-
-    def extract_operator(self):
-        operator = self.current_char
-        self.advance()
-        return Operator(operator)
+        return Integer(number) if not isFloat else Float(number)
 
     def extract_word(self):
         word = ""
-        while self.current_char in Lexer.letters and self.idx < len(self.text):
-            word += self.current_char
-            self.advance()
+        while self.char in Lexer.letters and self.idx < len(self.text):
+            word += self.char
+            self.move()
 
         return word
+
+    def move(self):
+        self.idx += 1
+        if self.idx < len(self.text):
+            self.char = self.text[self.idx]
