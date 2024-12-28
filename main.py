@@ -1,29 +1,36 @@
+
 from data import Data
 from lexer import Lexer
 from parser import Parser
 from interpreter import Interpreter
 
-base = Data()
 
-while True:
-    try:
-        text = input("Scribble> ")
+def run_scribble():
+    base = Data()
+    interpreter = Interpreter(None, base)
 
-        lexer = Lexer(text)
-        tokens = lexer.tokenize()
+    while True:
+        try:
+            text = input("Scribble> ")
 
-        print(tokens)
+            lexer = Lexer(text)
+            tokens = lexer.tokenize()
+            print(tokens)
 
-        parser = Parser(tokens)
-        tree = parser.parse()
+            parser = Parser(tokens)
+            tree = parser.parse()
+            print(tree)
 
-        print(tree)
+            interpreter.tree = tree
+            result = interpreter.interpret()
+            print(result)
 
-        interpreter = Interpreter(tree, base)
-        result = interpreter.interpret()
+            if result and result.type.startswith('VAR'):
+                print(f"Current value: {base.read(result.value)}")
 
-        print(result)
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
-    #if 2 greater than 1 do make x = 5
+
+if __name__ == "__main__":
+    run_scribble()
